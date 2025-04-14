@@ -3,8 +3,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -21,7 +19,6 @@ public class StoryController implements Initializable {
     @FXML private ProgressBar moralityBar;
     @FXML private Label inventoryLabel;
     @FXML private Button resetButton;
-    @FXML private ImageView sceneImageView; // Added ImageView reference
 
     private StoryManager storyManager;
 
@@ -46,22 +43,6 @@ public class StoryController implements Initializable {
     private void updateUI() {
         // Update story text
         storyTextLabel.setText(storyManager.getCurrentSceneDescription());
-
-        // Update scene image
-        try {
-            String imagePath = storyManager.getSceneImagePath();
-            Image sceneImage = new Image(getClass().getResourceAsStream(imagePath));
-            sceneImageView.setImage(sceneImage);
-        } catch (Exception e) {
-            System.err.println("Error loading image: " + e.getMessage());
-            // Fall back to placeholder if image loading fails
-            try {
-                sceneImageView.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
-            } catch (Exception ex) {
-                // If even placeholder fails, just continue without an image
-                System.err.println("Could not load placeholder image: " + ex.getMessage());
-            }
-        }
 
         // Update morality score display
         int morality = storyManager.getMoralityScore();

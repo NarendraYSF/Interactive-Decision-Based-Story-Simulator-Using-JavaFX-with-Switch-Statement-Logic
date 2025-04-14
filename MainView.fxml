@@ -3,14 +3,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="StoryController"
-            prefHeight="700.0" prefWidth="800.0"
-            stylesheets="@styles.css">
+            prefHeight="600.0" prefWidth="800.0"
+            stylesheets="@style.css">
     <top>
         <VBox spacing="10" alignment="CENTER">
             <padding>
@@ -32,13 +30,6 @@
                     <Insets top="20" right="20" bottom="20" left="20"/>
                 </padding>
                 <Label fx:id="storyTextLabel" wrapText="true" styleClass="story-text"/>
-
-                <!-- Added scene image container -->
-                <VBox alignment="CENTER" styleClass="image-container">
-                    <ImageView fx:id="sceneImageView" preserveRatio="true" fitWidth="500">
-                        <Image url="@images/placeholder.png"/>
-                    </ImageView>
-                </VBox>
             </VBox>
         </ScrollPane>
     </center>

@@ -12,13 +12,16 @@ public class StoryManager {
     public enum ChoiceType {
         EXPLORE_FOREST, VISIT_CASTLE, FIGHT_MONSTER,
         HELP_VILLAGERS, STEAL_TREASURE, BEFRIEND_KING,
-        CHALLENGE_KING, FACE_DRAGON, RETREAT
+        CHALLENGE_KING, FACE_DRAGON, RETREAT,
+        // New choices for the forest revisit after dragon retreat
+        SEEK_ANCIENT_MAGIC, TRAIN_WITH_VILLAGERS
     }
 
     private SceneID currentScene;
     private int moralityScore;
     private boolean hasWeapon;
     private boolean hasArtifact;
+    private boolean hasRetreatedFromDragon; // New flag to track retreat state
 
     /**
      * Constructor initializes the game state to starting values
@@ -28,6 +31,7 @@ public class StoryManager {
         this.moralityScore = 0;
         this.hasWeapon = false;
         this.hasArtifact = false;
+        this.hasRetreatedFromDragon = false;
     }
 
     /**
@@ -79,28 +83,51 @@ public class StoryManager {
      * Handles choices for the FOREST scene using a switch statement with conditional logic
      */
     private void handleForestSceneChoice(ChoiceType userChoice) {
-        switch(userChoice) {
-            case FIGHT_MONSTER:
-                // Conditional logic within a switch case
-                if (moralityScore > 15) {
-                    hasWeapon = true; // Reward for having good morality
+        if (hasRetreatedFromDragon) {
+            // Special handling for returning to forest after dragon retreat
+            switch(userChoice) {
+                case SEEK_ANCIENT_MAGIC:
+                    moralityScore += 5;
+                    hasArtifact = true; // Gain the artifact
                     currentScene = SceneID.FINAL_SHOWDOWN;
-                } else {
-                    currentScene = SceneID.GAME_OVER; // Not morally strong enough
-                }
-                break;
-            case HELP_VILLAGERS:
-                moralityScore += 20; // Major morality boost
-                hasArtifact = true; // Reward item
-                currentScene = SceneID.CASTLE;
-                break;
-            case STEAL_TREASURE:
-                moralityScore -= 25; // Large morality penalty
-                hasWeapon = true; // Still get weapon, but at a cost
-                currentScene = SceneID.CASTLE;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid choice for FOREST scene: " + userChoice);
+                    break;
+                case TRAIN_WITH_VILLAGERS:
+                    moralityScore += 15;
+                    hasWeapon = true; // Gain the weapon
+                    currentScene = SceneID.FINAL_SHOWDOWN;
+                    break;
+                case FACE_DRAGON:
+                    // Direct path back to dragon
+                    currentScene = SceneID.FINAL_SHOWDOWN;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid choice for retreat forest scene: " + userChoice);
+            }
+        } else {
+            // Original forest scene logic
+            switch(userChoice) {
+                case FIGHT_MONSTER:
+                    // Conditional logic within a switch case
+                    if (moralityScore > 15) {
+                        hasWeapon = true; // Reward for having good morality
+                        currentScene = SceneID.FINAL_SHOWDOWN;
+                    } else {
+                        currentScene = SceneID.GAME_OVER; // Not morally strong enough
+                    }
+                    break;
+                case HELP_VILLAGERS:
+                    moralityScore += 20; // Major morality boost
+                    hasArtifact = true; // Reward item
+                    currentScene = SceneID.CASTLE;
+                    break;
+                case STEAL_TREASURE:
+                    moralityScore -= 25; // Large morality penalty
+                    hasWeapon = true; // Still get weapon, but at a cost
+                    currentScene = SceneID.CASTLE;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid choice for FOREST scene: " + userChoice);
+            }
         }
     }
 
@@ -151,6 +178,7 @@ public class StoryManager {
                     currentScene = SceneID.GAME_OVER; // Evil characters can't retreat
                 } else {
                     currentScene = SceneID.FOREST;
+                    hasRetreatedFromDragon = true; // Set the retreat flag
                     moralityScore -= 10; // Penalty for retreating
                 }
                 break;
@@ -172,15 +200,22 @@ public class StoryManager {
                         + "Which path will you choose?";
 
             case FOREST:
-                String baseDesc = "The forest is thick with ancient trees and strange sounds. "
-                        + "As you venture deeper, you encounter a small village under attack "
-                        + "by a fearsome monster. The villagers look desperate for help.";
+                if (hasRetreatedFromDragon) {
+                    return "You return to the forest, seeking to strengthen yourself before facing the dragon again. "
+                            + "The once-attacked village is now peaceful, thanks to your earlier help. "
+                            + "Your previous adventure has taught you much, but you know you need more power. "
+                            + "Deep in the forest, you sense powerful magic. What will you do now?";
+                } else {
+                    String baseDesc = "The forest is thick with ancient trees and strange sounds. "
+                            + "As you venture deeper, you encounter a small village under attack "
+                            + "by a fearsome monster. The villagers look desperate for help.";
 
-                // Conditional text addition based on state
-                if (moralityScore < 0) {
-                    baseDesc += "\n\nYou also notice a treasure chest hidden nearby, seemingly unguarded.";
+                    // Conditional text addition based on state
+                    if (moralityScore < 0) {
+                        baseDesc += "\n\nYou also notice a treasure chest hidden nearby, seemingly unguarded.";
+                    }
+                    return baseDesc;
                 }
-                return baseDesc;
 
             case CASTLE:
                 String castleDesc = "The grand castle is bustling with activity. Guards eye you suspiciously as you enter.";
@@ -238,18 +273,27 @@ public class StoryManager {
                 };
 
             case FOREST:
-                // Different choices based on morality score
-                if (moralityScore < 0) {
+                if (hasRetreatedFromDragon) {
+                    // Different choices for returning to the forest
                     return new ChoiceType[] {
-                            ChoiceType.FIGHT_MONSTER,
-                            ChoiceType.HELP_VILLAGERS,
-                            ChoiceType.STEAL_TREASURE
+                            ChoiceType.SEEK_ANCIENT_MAGIC,
+                            ChoiceType.TRAIN_WITH_VILLAGERS,
+                            ChoiceType.FACE_DRAGON
                     };
                 } else {
-                    return new ChoiceType[] {
-                            ChoiceType.FIGHT_MONSTER,
-                            ChoiceType.HELP_VILLAGERS
-                    };
+                    // Original forest choices
+                    if (moralityScore < 0) {
+                        return new ChoiceType[] {
+                                ChoiceType.FIGHT_MONSTER,
+                                ChoiceType.HELP_VILLAGERS,
+                                ChoiceType.STEAL_TREASURE
+                        };
+                    } else {
+                        return new ChoiceType[] {
+                                ChoiceType.FIGHT_MONSTER,
+                                ChoiceType.HELP_VILLAGERS
+                        };
+                    }
                 }
 
             case CASTLE:
@@ -274,6 +318,39 @@ public class StoryManager {
     }
 
     /**
+     * Uses a switch statement to convert enum choices to human-readable button text
+     */
+    public String getChoiceButtonText(ChoiceType choice) {
+        // Simple switch mapping enum values to display strings
+        switch(choice) {
+            case EXPLORE_FOREST:
+                return "Explore the Forest";
+            case VISIT_CASTLE:
+                return "Visit the Castle";
+            case FIGHT_MONSTER:
+                return "Fight the Monster";
+            case HELP_VILLAGERS:
+                return "Help the Villagers";
+            case STEAL_TREASURE:
+                return "Steal the Treasure";
+            case BEFRIEND_KING:
+                return "Befriend the King";
+            case CHALLENGE_KING:
+                return "Challenge the King";
+            case FACE_DRAGON:
+                return "Face the Dragon";
+            case RETREAT:
+                return "Retreat";
+            case SEEK_ANCIENT_MAGIC:
+                return "Seek Ancient Magic";
+            case TRAIN_WITH_VILLAGERS:
+                return "Train with Grateful Villagers";
+            default:
+                return "Unknown Choice";
+        }
+    }
+
+    /**
      * Uses a switch statement to determine the appropriate image path for each scene
      */
     public String getSceneImagePath() {
@@ -283,8 +360,9 @@ public class StoryManager {
                 return "/images/crossroads.png";
 
             case FOREST:
-                // Different images based on morality for the same scene
-                if (moralityScore < 0) {
+                if (hasRetreatedFromDragon) {
+                    return "/images/forest_return.png";
+                } else if (moralityScore < 0) {
                     return "/images/dark_forest.png";
                 } else {
                     return "/images/forest.png";
@@ -325,34 +403,6 @@ public class StoryManager {
                 return "/images/placeholder.png";
         }
     }
-    /**
-     * Uses a switch statement to convert enum choices to human-readable button text
-     */
-    public String getChoiceButtonText(ChoiceType choice) {
-        // Simple switch mapping enum values to display strings
-        switch(choice) {
-            case EXPLORE_FOREST:
-                return "Explore the Forest";
-            case VISIT_CASTLE:
-                return "Visit the Castle";
-            case FIGHT_MONSTER:
-                return "Fight the Monster";
-            case HELP_VILLAGERS:
-                return "Help the Villagers";
-            case STEAL_TREASURE:
-                return "Steal the Treasure";
-            case BEFRIEND_KING:
-                return "Befriend the King";
-            case CHALLENGE_KING:
-                return "Challenge the King";
-            case FACE_DRAGON:
-                return "Face the Dragon";
-            case RETREAT:
-                return "Retreat";
-            default:
-                return "Unknown Choice";
-        }
-    }
 
     // Getters and setters
     public SceneID getCurrentScene() {
@@ -371,6 +421,10 @@ public class StoryManager {
         return hasArtifact;
     }
 
+    public boolean hasRetreatedFromDragon() {
+        return hasRetreatedFromDragon;
+    }
+
     /**
      * Reset the game to initial state
      */
@@ -379,5 +433,6 @@ public class StoryManager {
         this.moralityScore = 0;
         this.hasWeapon = false;
         this.hasArtifact = false;
+        this.hasRetreatedFromDragon = false;
     }
 }
