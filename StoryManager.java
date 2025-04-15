@@ -21,7 +21,9 @@ public class StoryManager {
     private int moralityScore;
     private boolean hasWeapon;
     private boolean hasArtifact;
-    private boolean hasRetreatedFromDragon; // New flag to track retreat state
+    private boolean hasRetreatedFromDragon;
+    private int dragonRetreatCount;
+    private boolean isCorruptedByMagic;
 
     /**
      * Constructor initializes the game state to starting values
@@ -32,6 +34,8 @@ public class StoryManager {
         this.hasWeapon = false;
         this.hasArtifact = false;
         this.hasRetreatedFromDragon = false;
+        this.dragonRetreatCount = 0;
+        this.isCorruptedByMagic = false;
     }
 
     /**
@@ -40,7 +44,7 @@ public class StoryManager {
      */
     public void handleChoice(ChoiceType userChoice) {
         // First-level switch based on current scene
-        switch(currentScene) {
+        switch (currentScene) {
             case START:
                 handleStartSceneChoice(userChoice);
                 break;
@@ -65,10 +69,10 @@ public class StoryManager {
      */
     private void handleStartSceneChoice(ChoiceType userChoice) {
         // Second-level switch based on user choice
-        switch(userChoice) {
+        switch (userChoice) {
             case EXPLORE_FOREST:
                 currentScene = SceneID.FOREST;
-                moralityScore += 10; // Exploring is considered positive
+                moralityScore += 5; // Exploring is considered positive
                 break;
             case VISIT_CASTLE:
                 currentScene = SceneID.CASTLE;
@@ -84,28 +88,28 @@ public class StoryManager {
      */
     private void handleForestSceneChoice(ChoiceType userChoice) {
         if (hasRetreatedFromDragon) {
-            // Special handling for returning to forest after dragon retreat
-            switch(userChoice) {
+            switch (userChoice) {
                 case SEEK_ANCIENT_MAGIC:
-                    moralityScore += 5;
-                    hasArtifact = true; // Gain the artifact
+                    moralityScore -= 20; // Major morality penalty
+                    hasArtifact = true;
+                    isCorruptedByMagic = true; // Set corruption flag
                     currentScene = SceneID.FINAL_SHOWDOWN;
                     break;
                 case TRAIN_WITH_VILLAGERS:
                     moralityScore += 15;
-                    hasWeapon = true; // Gain the weapon
+                    hasWeapon = true; // Gain weapon without corruption
                     currentScene = SceneID.FINAL_SHOWDOWN;
                     break;
                 case FACE_DRAGON:
-                    // Direct path back to dragon
                     currentScene = SceneID.FINAL_SHOWDOWN;
+                    hasRetreatedFromDragon = false; // Reset flag when returning to dragon
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid choice for retreat forest scene: " + userChoice);
             }
         } else {
             // Original forest scene logic
-            switch(userChoice) {
+            switch (userChoice) {
                 case FIGHT_MONSTER:
                     // Conditional logic within a switch case
                     if (moralityScore > 15) {
@@ -135,7 +139,7 @@ public class StoryManager {
      * Handles choices for the CASTLE scene using a switch statement with inventory checks
      */
     private void handleCastleSceneChoice(ChoiceType userChoice) {
-        switch(userChoice) {
+        switch (userChoice) {
             case BEFRIEND_KING:
                 moralityScore += 15;
                 // Path depends on inventory state
@@ -163,23 +167,48 @@ public class StoryManager {
      * Handles choices for the FINAL_SHOWDOWN scene with complex condition evaluation
      */
     private void handleShowdownSceneChoice(ChoiceType userChoice) {
-        switch(userChoice) {
+        switch (userChoice) {
             case FACE_DRAGON:
-                // Multiple ways to win based on morality OR inventory
-                if (moralityScore > 30 || (hasWeapon && hasArtifact)) {
-                    currentScene = SceneID.VICTORY;
+                if (isCorruptedByMagic) {
+                    // Corrupted players MUST have weapon to win
+                    if (hasWeapon) {
+                        currentScene = SceneID.VICTORY;
+                    } else {
+                        currentScene = SceneID.GAME_OVER;
+                    }
                 } else {
-                    currentScene = SceneID.GAME_OVER;
+                    // Original win conditions for non-corrupted
+                    if (moralityScore > 30 || (hasWeapon && hasArtifact)) {
+                        currentScene = SceneID.VICTORY;
+                    } else {
+                        currentScene = SceneID.GAME_OVER;
+                    }
+                }
+                if (isCorruptedByMagic) {
+                    // Corrupted players MUST have weapon to win
+                    currentScene = hasWeapon ? SceneID.VICTORY : SceneID.GAME_OVER;
+                } else {
+                    // Original win conditions for non-corrupted
+                    if (moralityScore > 30 || (hasWeapon && hasArtifact)) {
+                        currentScene = SceneID.VICTORY;
+                    } else {
+                        currentScene = SceneID.GAME_OVER;
+                    }
                 }
                 break;
             case RETREAT:
-                // Different outcomes based on morality
-                if (moralityScore < 0) {
-                    currentScene = SceneID.GAME_OVER; // Evil characters can't retreat
+                // Increment retreat counter
+                dragonRetreatCount++;
+                if (dragonRetreatCount >= 2) {
+                    currentScene = SceneID.GAME_OVER; // No second chances!
                 } else {
                     currentScene = SceneID.FOREST;
                     hasRetreatedFromDragon = true; // Set the retreat flag
                     moralityScore -= 10; // Penalty for retreating
+                    // Optional: Add additional penalty for low morality
+                    if (moralityScore < 0) {
+                        moralityScore -= 5; // Further penalty for evil characters
+                    }
                 }
                 break;
             default:
@@ -192,7 +221,7 @@ public class StoryManager {
      */
     public String getCurrentSceneDescription() {
         // Switch on scene type with complex string generation
-        switch(currentScene) {
+        switch (currentScene) {
             case START:
                 return "You stand at the crossroads of a mystical kingdom. To the north lies a dark forest, "
                         + "rumored to be filled with dangerous creatures but also treasures. To the east, "
@@ -236,25 +265,32 @@ public class StoryManager {
                         + "Do you face the dragon with what you've earned along the way, or retreat to gather more strength?";
 
             case GAME_OVER:
-                // Different game over text based on morality
-                if (moralityScore < 0) {
+                if (isCorruptedByMagic && !hasWeapon) {
+                    return "The dragon senses your corruption and weakness. Without a proper weapon, "
+                            + "the ancient magic consumes you entirely. Your body dissolves into dark mist "
+                            + "as the dragon laughs.\n\nGAME OVER";
+                } else if (dragonRetreatCount >= 2) {
+                    return "The dragon blocks your escape. There's no running from destiny twice.\n\nGAME OVER";
+                } else if (moralityScore < 0) {
                     return "Your selfish actions have led to your downfall. The kingdom falls into darkness, "
                             + "and your name is forgotten in time.\n\nGAME OVER";
                 } else {
                     return "Despite your good intentions, your journey has come to a premature end. "
                             + "Perhaps another path would have led to victory.\n\nGAME OVER";
                 }
-
             case VICTORY:
                 // Different victory text based on morality
-                if (moralityScore > 30) {
+                if (isCorruptedByMagic) {
+                    return "The ancient magic courses through your veins as you strike down the dragon. "
+                            + "You claim its hoard, but feel the corruption spreading. The kingdom will soon "
+                            + "learn to fear your new power...\n\nPYRRHIC VICTORY";
+                } else if (moralityScore > 30) {
                     return "Through your courage and moral choices, you have overcome the dragon! "
                             + "The kingdom celebrates you as a hero, and songs of your deeds will be sung for generations.\n\nVICTORY!";
                 } else {
                     return "Through cunning and resourcefulness, you have defeated the dragon and claimed its treasure. "
                             + "Your name will be remembered in the annals of history.\n\nVICTORY!";
                 }
-
             default:
                 return "Error: Unknown scene";
         }
@@ -265,9 +301,9 @@ public class StoryManager {
      */
     public ChoiceType[] getAvailableChoices() {
         // Switch returning different arrays based on scene and conditions
-        switch(currentScene) {
+        switch (currentScene) {
             case START:
-                return new ChoiceType[] {
+                return new ChoiceType[]{
                         ChoiceType.EXPLORE_FOREST,
                         ChoiceType.VISIT_CASTLE
                 };
@@ -275,21 +311,21 @@ public class StoryManager {
             case FOREST:
                 if (hasRetreatedFromDragon) {
                     // Different choices for returning to the forest
-                    return new ChoiceType[] {
+                    return new ChoiceType[]{
                             ChoiceType.SEEK_ANCIENT_MAGIC,
                             ChoiceType.TRAIN_WITH_VILLAGERS,
                             ChoiceType.FACE_DRAGON
                     };
                 } else {
                     // Original forest choices
-                    if (moralityScore < 0) {
-                        return new ChoiceType[] {
+                    if (moralityScore <= 0) {
+                        return new ChoiceType[]{
                                 ChoiceType.FIGHT_MONSTER,
                                 ChoiceType.HELP_VILLAGERS,
                                 ChoiceType.STEAL_TREASURE
                         };
                     } else {
-                        return new ChoiceType[] {
+                        return new ChoiceType[]{
                                 ChoiceType.FIGHT_MONSTER,
                                 ChoiceType.HELP_VILLAGERS
                         };
@@ -297,13 +333,13 @@ public class StoryManager {
                 }
 
             case CASTLE:
-                return new ChoiceType[] {
+                return new ChoiceType[]{
                         ChoiceType.BEFRIEND_KING,
                         ChoiceType.CHALLENGE_KING
                 };
 
             case FINAL_SHOWDOWN:
-                return new ChoiceType[] {
+                return new ChoiceType[]{
                         ChoiceType.FACE_DRAGON,
                         ChoiceType.RETREAT
                 };
@@ -322,7 +358,7 @@ public class StoryManager {
      */
     public String getChoiceButtonText(ChoiceType choice) {
         // Simple switch mapping enum values to display strings
-        switch(choice) {
+        switch (choice) {
             case EXPLORE_FOREST:
                 return "Explore the Forest";
             case VISIT_CASTLE:
@@ -355,7 +391,7 @@ public class StoryManager {
      */
     public String getSceneImagePath() {
         // Switch on scene type to return the corresponding image path
-        switch(currentScene) {
+        switch (currentScene) {
             case START:
                 return "/images/crossroads.png";
 
@@ -384,21 +420,26 @@ public class StoryManager {
                 return "/images/dragon_lair.png";
 
             case GAME_OVER:
-                // Different game over images based on morality
-                if (moralityScore < 0) {
+                if (isCorruptedByMagic && !hasWeapon) {
+                    return "/images/corruption_consumption.png";
+                } else if (dragonRetreatCount >= 2) {
+                    return "/images/dragon_catches_you.png";
+                } else if (moralityScore < 0) {
                     return "/images/dark_ending.png";
                 } else {
                     return "/images/game_over.png";
                 }
+                // REMOVE THE DUPLICATE CONDITION BLOCK
 
             case VICTORY:
-                // Different victory images based on morality
-                if (moralityScore > 30) {
+                if (isCorruptedByMagic) {
+                    return "/images/corrupted_victory.png";
+                } else if (moralityScore > 30) {
                     return "/images/hero_victory.png";
                 } else {
                     return "/images/treasure_victory.png";
                 }
-
+                // REMOVE THE DUPLICATE MORALITY CHECK
             default:
                 return "/images/placeholder.png";
         }
@@ -428,11 +469,24 @@ public class StoryManager {
     /**
      * Reset the game to initial state
      */
+    /**
+     * Reset the game to initial state
+     */
     public void resetGame() {
         this.currentScene = SceneID.START;
         this.moralityScore = 0;
         this.hasWeapon = false;
         this.hasArtifact = false;
         this.hasRetreatedFromDragon = false;
+        this.dragonRetreatCount = 0; // Reset the counter
+        this.isCorruptedByMagic = false;
+    }
+
+    // Getters and setters...
+    public int getDragonRetreatCount() {
+        return dragonRetreatCount;
+    }
+    public boolean isCorrupted() {
+        return isCorruptedByMagic;
     }
 }
