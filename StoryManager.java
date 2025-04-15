@@ -1,6 +1,6 @@
 /**
- * Core class that manages the story state, transitions, and logic.
- * Demonstrates extensive use of switch statements for handling different scenes and choices.
+ * Kelas inti yang mengelola status cerita, transisi, dan logika.
+ * Mendemonstrasikan penggunaan switch statement untuk menangani scene dan pilihan yang berbeda.
  */
 public class StoryManager {
     // Enum for different scenes in the story
@@ -26,7 +26,7 @@ public class StoryManager {
     private boolean isCorruptedByMagic;
 
     /**
-     * Constructor initializes the game state to starting values
+     * Konstruktor melakukan inisialisasi status permainan ke nilai awal
      */
     public StoryManager() {
         this.currentScene = SceneID.START;
@@ -39,11 +39,11 @@ public class StoryManager {
     }
 
     /**
-     * Main method that handles player choices using a switch statement
-     * to direct to the appropriate scene-specific handler
+     * Metode utama yang menangani pilihan pemain menggunakan switch statement
+     * untuk mengarahkan ke penangan khusus adegan yang sesuai
      */
     public void handleChoice(ChoiceType userChoice) {
-        // First-level switch based on current scene
+        // Beralih tingkat pertama berdasarkan adegan saat ini (Current Scene)
         switch (currentScene) {
             case START:
                 handleStartSceneChoice(userChoice);
@@ -59,24 +59,23 @@ public class StoryManager {
                 break;
             case GAME_OVER:
             case VICTORY:
-                // These are terminal states, no choices to handle
+                // Ini adalah kondisi akhir, tidak ada pilihan untuk ditangani
                 break;
         }
     }
 
     /**
-     * Handles choices for the START scene using a switch statement
+     * Menangani pilihan untuk adegan START menggunakan switch statement
      */
     private void handleStartSceneChoice(ChoiceType userChoice) {
-        // Second-level switch based on user choice
+        // Switch tingkat kedua berdasarkan pilihan pengguna
         switch (userChoice) {
             case EXPLORE_FOREST:
-                currentScene = SceneID.FOREST;
-                moralityScore += 5; // Exploring is considered positive
+                currentScene = SceneID.FOREST; // Menjelajah dianggap netral
                 break;
             case VISIT_CASTLE:
                 currentScene = SceneID.CASTLE;
-                moralityScore -= 5; // Seeking power is slightly negative
+                moralityScore -= 5; // Mencari kekuatan sedikit negatif
                 break;
             default:
                 throw new IllegalArgumentException("Invalid choice for START scene: " + userChoice);
@@ -84,49 +83,49 @@ public class StoryManager {
     }
 
     /**
-     * Handles choices for the FOREST scene using a switch statement with conditional logic
+     * Menangani pilihan untuk scene FOREST menggunakan switch statement dengan logika bersyarat
      */
     private void handleForestSceneChoice(ChoiceType userChoice) {
         if (hasRetreatedFromDragon) {
             switch (userChoice) {
                 case SEEK_ANCIENT_MAGIC:
-                    moralityScore -= 20; // Major morality penalty
+                    moralityScore -= 20; // Hukuman moralitas besar
                     hasArtifact = true;
                     isCorruptedByMagic = true; // Set corruption flag
                     currentScene = SceneID.FINAL_SHOWDOWN;
                     break;
                 case TRAIN_WITH_VILLAGERS:
                     moralityScore += 15;
-                    hasWeapon = true; // Gain weapon without corruption
+                    hasWeapon = true; // Dapatkan senjata tanpa menguragi moralitas
                     currentScene = SceneID.FINAL_SHOWDOWN;
                     break;
                 case FACE_DRAGON:
                     currentScene = SceneID.FINAL_SHOWDOWN;
-                    hasRetreatedFromDragon = false; // Reset flag when returning to dragon
+                    hasRetreatedFromDragon = false; // mereset variable bertemu dengan boss menjadi FALSE
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid choice for retreat forest scene: " + userChoice);
             }
         } else {
-            // Original forest scene logic
+            // Logika pemandangan hutan asli (belum lari dari boss)
             switch (userChoice) {
                 case FIGHT_MONSTER:
-                    // Conditional logic within a switch case
+                    // Logika bersyarat di dalam switch case
                     if (moralityScore > 15) {
-                        hasWeapon = true; // Reward for having good morality
+                        hasWeapon = true; // Reward karena memiliki moralitas yang baik
                         currentScene = SceneID.FINAL_SHOWDOWN;
                     } else {
-                        currentScene = SceneID.GAME_OVER; // Not morally strong enough
+                        currentScene = SceneID.GAME_OVER; // Tidak cukup kuat secara moral
                     }
                     break;
                 case HELP_VILLAGERS:
-                    moralityScore += 20; // Major morality boost
-                    hasArtifact = true; // Reward item
+                    moralityScore += 20; // Peningkatan moralitas yang besar
+                    hasArtifact = true; // Item hadiah
                     currentScene = SceneID.CASTLE;
                     break;
                 case STEAL_TREASURE:
-                    moralityScore -= 25; // Large morality penalty
-                    hasWeapon = true; // Still get weapon, but at a cost
+                    moralityScore -= 25; // Hukuman moralitas yang besar
+                    hasWeapon = true; // Masih bisa mendapatkan senjata, dibayar dengan nilai moralitas
                     currentScene = SceneID.CASTLE;
                     break;
                 default:
@@ -136,26 +135,26 @@ public class StoryManager {
     }
 
     /**
-     * Handles choices for the CASTLE scene using a switch statement with inventory checks
+     * Menangani pilihan untuk adegan CASTLE menggunakan switch case dengan pemeriksaan inventory
      */
     private void handleCastleSceneChoice(ChoiceType userChoice) {
         switch (userChoice) {
             case BEFRIEND_KING:
                 moralityScore += 15;
-                // Path depends on inventory state
+                // Jalur tergantung pada kondisi inventory
                 if (hasArtifact) {
                     currentScene = SceneID.FINAL_SHOWDOWN;
                 } else {
-                    currentScene = SceneID.FOREST; // Need to go back and find the artifact
+                    currentScene = SceneID.FOREST; // Harus kembali dan menemukan artefak
                 }
                 break;
             case CHALLENGE_KING:
                 moralityScore -= 10;
-                // Different outcome based on inventory
+                // Hasil yang berbeda berdasarkan isi inventory
                 if (hasWeapon) {
                     currentScene = SceneID.FINAL_SHOWDOWN;
                 } else {
-                    currentScene = SceneID.GAME_OVER; // Can't challenge without a weapon
+                    currentScene = SceneID.GAME_OVER; // Akan mati jika menantang tanpa senjata
                 }
                 break;
             default:
@@ -164,31 +163,16 @@ public class StoryManager {
     }
 
     /**
-     * Handles choices for the FINAL_SHOWDOWN scene with complex condition evaluation
+     * Menangani pilihan untuk adegan FINAL_SHOWDOWN dengan evaluasi kondisi yang kompleks
      */
     private void handleShowdownSceneChoice(ChoiceType userChoice) {
         switch (userChoice) {
             case FACE_DRAGON:
                 if (isCorruptedByMagic) {
-                    // Corrupted players MUST have weapon to win
-                    if (hasWeapon) {
-                        currentScene = SceneID.VICTORY;
-                    } else {
-                        currentScene = SceneID.GAME_OVER;
-                    }
-                } else {
-                    // Original win conditions for non-corrupted
-                    if (moralityScore > 30 || (hasWeapon && hasArtifact)) {
-                        currentScene = SceneID.VICTORY;
-                    } else {
-                        currentScene = SceneID.GAME_OVER;
-                    }
-                }
-                if (isCorruptedByMagic) {
-                    // Corrupted players MUST have weapon to win
+                    // Pemain yang corrupted HARUS memiliki senjata untuk menang
                     currentScene = hasWeapon ? SceneID.VICTORY : SceneID.GAME_OVER;
                 } else {
-                    // Original win conditions for non-corrupted
+                    // Kondisi kemenangan untuk yang tidak corrupted
                     if (moralityScore > 30 || (hasWeapon && hasArtifact)) {
                         currentScene = SceneID.VICTORY;
                     } else {
@@ -197,15 +181,15 @@ public class StoryManager {
                 }
                 break;
             case RETREAT:
-                // Increment retreat counter
+                // Penghitung kabur penambahan
                 dragonRetreatCount++;
                 if (dragonRetreatCount >= 2) {
-                    currentScene = SceneID.GAME_OVER; // No second chances!
+                    currentScene = SceneID.GAME_OVER; // Tidak ada kesempatan kedua!
                 } else {
                     currentScene = SceneID.FOREST;
-                    hasRetreatedFromDragon = true; // Set the retreat flag
-                    moralityScore -= 10; // Penalty for retreating
-                    // Optional: Add additional penalty for low morality
+                    hasRetreatedFromDragon = true; // Mengatur variable kabur menjadi true
+                    moralityScore -= 10; // Hukuman karena mundur
+                    // Menambahkan hukuman tambahan untuk moralitas yang rendah
                     if (moralityScore < 0) {
                         moralityScore -= 5; // Further penalty for evil characters
                     }
@@ -217,16 +201,18 @@ public class StoryManager {
     }
 
     /**
-     * Uses a switch statement to generate scene descriptions based on current state
+     * Menggunakan switch statement untuk menghasilkan deskripsi adegan berdasarkan kondisi saat ini
      */
     public String getCurrentSceneDescription() {
-        // Switch on scene type with complex string generation
+        // Mengaktifkan jenis adegan dengan pembuatan string yang kompleks
         switch (currentScene) {
             case START:
-                return "You stand at the crossroads of a mystical kingdom. To the north lies a dark forest, "
-                        + "rumored to be filled with dangerous creatures but also treasures. To the east, "
-                        + "a magnificent castle looms over the landscape, home to the king and his court.\n\n"
-                        + "Which path will you choose?";
+                return """
+                        You stand at the crossroads of a mystical kingdom. To the north lies a dark forest, \
+                        rumored to be filled with dangerous creatures but also treasures. To the east, \
+                        a magnificent castle looms over the landscape, home to the king and his court.
+                        
+                        Which path will you choose?""";
 
             case FOREST:
                 if (hasRetreatedFromDragon) {
@@ -239,7 +225,7 @@ public class StoryManager {
                             + "As you venture deeper, you encounter a small village under attack "
                             + "by a fearsome monster. The villagers look desperate for help.";
 
-                    // Conditional text addition based on state
+                    // Penambahan teks bersyarat berdasarkan status moralitas
                     if (moralityScore < 0) {
                         baseDesc += "\n\nYou also notice a treasure chest hidden nearby, seemingly unguarded.";
                     }
@@ -249,7 +235,7 @@ public class StoryManager {
             case CASTLE:
                 String castleDesc = "The grand castle is bustling with activity. Guards eye you suspiciously as you enter.";
 
-                // Conditional text based on inventory items
+                // Teks bersyarat berdasarkan item di inventory
                 if (hasArtifact) {
                     castleDesc += "\n\nYour artifact seems to glow in the presence of the castle's magic.";
                 }
@@ -260,36 +246,56 @@ public class StoryManager {
                 return castleDesc;
 
             case FINAL_SHOWDOWN:
-                return "You've reached the ancient dragon's lair. The massive creature guards the realm's "
-                        + "greatest treasure and darkest secrets. Your journey has led to this moment.\n\n"
-                        + "Do you face the dragon with what you've earned along the way, or retreat to gather more strength?";
+                return """
+                        You've reached the ancient dragon's lair. The massive creature guards the realm's \
+                        greatest treasure and darkest secrets. Your journey has led to this moment.
+                        
+                        Do you face the dragon with what you've earned along the way, or retreat to gather more strength?""";
 
             case GAME_OVER:
                 if (isCorruptedByMagic && !hasWeapon) {
-                    return "The dragon senses your corruption and weakness. Without a proper weapon, "
-                            + "the ancient magic consumes you entirely. Your body dissolves into dark mist "
-                            + "as the dragon laughs.\n\nGAME OVER";
+                    return """
+                            The dragon senses your corruption and weakness. Without a proper weapon, \
+                            the ancient magic consumes you entirely. Your body dissolves into dark mist \
+                            as the dragon laughs.
+                            
+                            GAME OVER""";
                 } else if (dragonRetreatCount >= 2) {
                     return "The dragon blocks your escape. There's no running from destiny twice.\n\nGAME OVER";
                 } else if (moralityScore < 0) {
-                    return "Your selfish actions have led to your downfall. The kingdom falls into darkness, "
-                            + "and your name is forgotten in time.\n\nGAME OVER";
+                    return """
+                            Your selfish actions have led to your downfall. The kingdom falls into darkness, \
+                            and your name is forgotten in time.
+                            
+                            GAME OVER""";
                 } else {
-                    return "Despite your good intentions, your journey has come to a premature end. "
-                            + "Perhaps another path would have led to victory.\n\nGAME OVER";
+                    return """
+                            Despite your good intentions, your journey has come to a premature end. \
+                            Perhaps another path would have led to victory.
+                            
+                            GAME OVER""";
                 }
             case VICTORY:
-                // Different victory text based on morality
+                // Teks kemenangan yang berbeda berdasarkan moralitas
                 if (isCorruptedByMagic) {
-                    return "The ancient magic courses through your veins as you strike down the dragon. "
-                            + "You claim its hoard, but feel the corruption spreading. The kingdom will soon "
-                            + "learn to fear your new power...\n\nPYRRHIC VICTORY";
+                    return """
+                            The ancient magic courses through your veins as you strike down the dragon. \
+                            You claim its hoard, but feel the corruption spreading. The kingdom will soon \
+                            learn to fear your new power...
+                            
+                            PYRRHIC VICTORY""";
                 } else if (moralityScore > 30) {
-                    return "Through your courage and moral choices, you have overcome the dragon! "
-                            + "The kingdom celebrates you as a hero, and songs of your deeds will be sung for generations.\n\nVICTORY!";
+                    return """
+                            Through your courage and moral choices, you have overcome the dragon! \
+                            The kingdom celebrates you as a hero, and songs of your deeds will be sung for generations.
+                            
+                            VICTORY!""";
                 } else {
-                    return "Through cunning and resourcefulness, you have defeated the dragon and claimed its treasure. "
-                            + "Your name will be remembered in the annals of history.\n\nVICTORY!";
+                    return """
+                            Through cunning and resourcefulness, you have defeated the dragon and claimed its treasure. \
+                            Your name will be remembered in the annals of history.
+                            
+                            VICTORY!""";
                 }
             default:
                 return "Error: Unknown scene";
@@ -297,7 +303,7 @@ public class StoryManager {
     }
 
     /**
-     * Uses a switch statement to determine available choices based on current state
+     * Menggunakan switch statement untuk menentukan pilihan yang tersedia berdasarkan kondisi saat ini (Current State)
      */
     public ChoiceType[] getAvailableChoices() {
         // Switch returning different arrays based on scene and conditions
@@ -310,14 +316,14 @@ public class StoryManager {
 
             case FOREST:
                 if (hasRetreatedFromDragon) {
-                    // Different choices for returning to the forest
+                    // Pilihan yang berbeda untuk yang kembali ke hutan
                     return new ChoiceType[]{
                             ChoiceType.SEEK_ANCIENT_MAGIC,
                             ChoiceType.TRAIN_WITH_VILLAGERS,
                             ChoiceType.FACE_DRAGON
                     };
                 } else {
-                    // Original forest choices
+                    // Pilihan di hutan yang original/asli (belum kabur)
                     if (moralityScore <= 0) {
                         return new ChoiceType[]{
                                 ChoiceType.FIGHT_MONSTER,
@@ -346,7 +352,7 @@ public class StoryManager {
 
             case GAME_OVER:
             case VICTORY:
-                return new ChoiceType[0]; // No choices for end states
+                return new ChoiceType[0]; // Tidak ada pilihan untuk status akhir
 
             default:
                 return new ChoiceType[0];
@@ -354,43 +360,31 @@ public class StoryManager {
     }
 
     /**
-     * Uses a switch statement to convert enum choices to human-readable button text
+     * Menggunakan switch statement untuk mengonversi pilihan enum menjadi teks tombol yang dapat dibaca manusia
      */
     public String getChoiceButtonText(ChoiceType choice) {
-        // Simple switch mapping enum values to display strings
-        switch (choice) {
-            case EXPLORE_FOREST:
-                return "Explore the Forest";
-            case VISIT_CASTLE:
-                return "Visit the Castle";
-            case FIGHT_MONSTER:
-                return "Fight the Monster";
-            case HELP_VILLAGERS:
-                return "Help the Villagers";
-            case STEAL_TREASURE:
-                return "Steal the Treasure";
-            case BEFRIEND_KING:
-                return "Befriend the King";
-            case CHALLENGE_KING:
-                return "Challenge the King";
-            case FACE_DRAGON:
-                return "Face the Dragon";
-            case RETREAT:
-                return "Retreat";
-            case SEEK_ANCIENT_MAGIC:
-                return "Seek Ancient Magic";
-            case TRAIN_WITH_VILLAGERS:
-                return "Train with Grateful Villagers";
-            default:
-                return "Unknown Choice";
-        }
+        // Nilai enum pemetaan sakelar sederhana untuk menampilkan string
+        return switch (choice) {
+            case EXPLORE_FOREST -> "Explore the Forest";
+            case VISIT_CASTLE -> "Visit the Castle";
+            case FIGHT_MONSTER -> "Fight the Monster";
+            case HELP_VILLAGERS -> "Help the Villagers";
+            case STEAL_TREASURE -> "Steal the Treasure";
+            case BEFRIEND_KING -> "Befriend the King";
+            case CHALLENGE_KING -> "Challenge the King";
+            case FACE_DRAGON -> "Face the Dragon";
+            case RETREAT -> "Retreat";
+            case SEEK_ANCIENT_MAGIC -> "Seek Ancient Magic";
+            case TRAIN_WITH_VILLAGERS -> "Train with Grateful Villagers";
+            default -> "Unknown Choice";
+        };
     }
 
     /**
-     * Uses a switch statement to determine the appropriate image path for each scene
+     * Menggunakan switch statement untuk menentukan jalur gambar yang sesuai untuk tiap adegan
      */
     public String getSceneImagePath() {
-        // Switch on scene type to return the corresponding image path
+        // Aktifkan jenis adegan untuk mengembalikan path gambar yang sesuai
         switch (currentScene) {
             case START:
                 return "/images/crossroads.png";
@@ -405,7 +399,7 @@ public class StoryManager {
                 }
 
             case CASTLE:
-                // Different castle images based on inventory state
+                // Gambar kastil yang berbeda berdasarkan isi inventory
                 if (hasArtifact && hasWeapon) {
                     return "/images/castle_hero.png";
                 } else if (hasWeapon) {
@@ -429,7 +423,6 @@ public class StoryManager {
                 } else {
                     return "/images/game_over.png";
                 }
-                // REMOVE THE DUPLICATE CONDITION BLOCK
 
             case VICTORY:
                 if (isCorruptedByMagic) {
@@ -439,13 +432,12 @@ public class StoryManager {
                 } else {
                     return "/images/treasure_victory.png";
                 }
-                // REMOVE THE DUPLICATE MORALITY CHECK
             default:
                 return "/images/placeholder.png";
         }
     }
 
-    // Getters and setters
+    // Getters dan setters
     public SceneID getCurrentScene() {
         return currentScene;
     }
@@ -466,11 +458,14 @@ public class StoryManager {
         return hasRetreatedFromDragon;
     }
 
+    public int getDragonRetreatCount() {
+        return dragonRetreatCount;
+    }
+    public boolean isCorrupted() {
+        return isCorruptedByMagic;
+    }
     /**
-     * Reset the game to initial state
-     */
-    /**
-     * Reset the game to initial state
+     * Mengatur ulang permainan ke kondisi awal
      */
     public void resetGame() {
         this.currentScene = SceneID.START;
@@ -480,13 +475,5 @@ public class StoryManager {
         this.hasRetreatedFromDragon = false;
         this.dragonRetreatCount = 0; // Reset the counter
         this.isCorruptedByMagic = false;
-    }
-
-    // Getters and setters...
-    public int getDragonRetreatCount() {
-        return dragonRetreatCount;
-    }
-    public boolean isCorrupted() {
-        return isCorruptedByMagic;
     }
 }

@@ -5,18 +5,18 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * Main entry point for the Interactive Story Simulator application.
- * This class launches the JavaFX application and sets up the primary stage.
+ * Titik masuk utama untuk aplikasi Cerita Interaktif.
+ * Kelas ini meluncurkan aplikasi JavaFX dan menyiapkan primary stage.
  */
 public class StorySimulatorApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Load the FXML file for the main UI
+        // Memuat file FXML untuk UI utama
         FXMLLoader loader = new FXMLLoader(getClass().getResource("MainView.fxml"));
         Parent root = loader.load();
 
-        // Configure and display the primary stage
+        // Mengonfigurasi dan menampilkan primary stage
         primaryStage.setTitle("Interactive Story Simulator");
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.setResizable(false);
@@ -24,7 +24,7 @@ public class StorySimulatorApp extends Application {
     }
 
     /**
-     * Application entry point
+     * Titik masuk aplikasi
      */
     public static void main(String[] args) {
         launch(args);

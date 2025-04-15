@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Controller class that handles UI interactions and connects the UI to the story logic.
+ * Kelas controller yang menangani interaksi UI dan menghubungkan UI ke logika cerita.
  */
 public class StoryController implements Initializable {
 
@@ -24,13 +24,13 @@ public class StoryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialize the story manager
+        // Menginisialisasi pengelola cerita
         storyManager = new StoryManager();
 
-        // Initial UI update
+        // Pembaruan UI awal
         updateUI();
 
-        // Set up reset button
+        // Mengatur tombol reset
         resetButton.setOnAction(event -> {
             storyManager.resetGame();
             updateUI();
@@ -38,22 +38,22 @@ public class StoryController implements Initializable {
     }
 
     /**
-     * Updates the UI based on the current state of the story
+     * Memperbarui UI berdasarkan keadaan cerita saat ini
      */
     private void updateUI() {
-        // Update story text
+        // Memperbarui teks cerita
         storyTextLabel.setText(storyManager.getCurrentSceneDescription());
 
-        // Update morality score display
+        // Memperbarui tampilan skor moralitas
         int morality = storyManager.getMoralityScore();
-        moralityLabel.setText("Morality: " + morality);
+        moralityLabel.setText("Moralitas: " + morality);
 
-        // Update morality bar (normalized between -100 and 100)
+        // Perbarui bilah moralitas (dinormalisasi antara -100 dan 100)
         double normalizedMorality = (morality + 100) / 200.0;
         normalizedMorality = Math.max(0, Math.min(1, normalizedMorality));
         moralityBar.setProgress(normalizedMorality);
 
-        // Set color based on morality using a switch-like cascading if structure
+        // Mengatur warna berdasarkan moralitas menggunakan struktur if bertingkat seperti switch
         if (morality > 30) {
             moralityBar.setStyle("-fx-accent: green;");
         } else if (morality > 0) {
@@ -64,7 +64,7 @@ public class StoryController implements Initializable {
             moralityBar.setStyle("-fx-accent: red;");
         }
 
-        // Update inventory text
+        // Memperbarui teks inventory
         StringBuilder inventoryText = new StringBuilder("Inventory: ");
         if (storyManager.hasWeapon()) {
             inventoryText.append("Mythical Weapon ");
@@ -77,28 +77,28 @@ public class StoryController implements Initializable {
         }
         inventoryLabel.setText(inventoryText.toString());
 
-        // Clear and update choices
+        // Menghapus dan memperbarui pilihan
         choicesContainer.getChildren().clear();
 
-        // Get available choices from story manager
+        // Dapatkan pilihan yang tersedia dari StoryManager
         StoryManager.ChoiceType[] choices = storyManager.getAvailableChoices();
 
-        // Check for end state
+        // Periksa status akhir
         if (storyManager.getCurrentScene() == StoryManager.SceneID.GAME_OVER ||
                 storyManager.getCurrentScene() == StoryManager.SceneID.VICTORY) {
             resetButton.setVisible(true);
         } else {
             resetButton.setVisible(false);
 
-            // Add choice buttons dynamically based on available choices
+            // Menambahkan tombol pilihan secara dinamis berdasarkan pilihan yang tersedia
             for (StoryManager.ChoiceType choice : choices) {
                 Button choiceButton = new Button(storyManager.getChoiceButtonText(choice));
                 choiceButton.setPrefWidth(300);
 
-                // Store the choice in a final variable to use in lambda
+                // Menyimpan pilihan dalam variabel akhir untuk digunakan dalam lambda
                 final StoryManager.ChoiceType buttonChoice = choice;
 
-                // Set up the action for this button
+                // Mengatur tindakan untuk tombol ini
                 choiceButton.setOnAction(event -> {
                     storyManager.handleChoice(buttonChoice);
                     updateUI();
