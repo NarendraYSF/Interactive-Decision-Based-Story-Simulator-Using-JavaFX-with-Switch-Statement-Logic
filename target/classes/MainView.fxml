@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="StoryController"
+            prefHeight="600.0" prefWidth="800.0"
+            stylesheets="@style.css">
+    <top>
+        <VBox spacing="10" alignment="CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="10" left="20"/>
+            </padding>
+            <Label text="Interactive Story Simulator" styleClass="title-label"/>
+            <HBox spacing="20" alignment="CENTER">
+                <Label fx:id="moralityLabel" text="Morality: 0"/>
+                <ProgressBar fx:id="moralityBar" progress="0.5" prefWidth="200"/>
+                <Label fx:id="inventoryLabel" text="Inventory: Empty"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="story-scroll-pane">
+            <VBox alignment="CENTER" spacing="20">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                <Label fx:id="storyTextLabel" wrapText="true" styleClass="story-text"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <VBox fx:id="choicesContainer" alignment="CENTER" spacing="10">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            <Button fx:id="resetButton" text="Play Again" visible="false"/>
+        </VBox>
+    </bottom>
+</BorderPane>

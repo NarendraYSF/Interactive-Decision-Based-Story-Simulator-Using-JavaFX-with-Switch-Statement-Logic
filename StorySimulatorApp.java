@@ -8,7 +8,7 @@ import javafx.stage.Stage;
  * Titik masuk utama untuk aplikasi Cerita Interaktif.
  * Kelas ini meluncurkan aplikasi JavaFX dan menyiapkan primary stage.
  */
-public class StorySimulatorApp extends Application {
+public class  StorySimulatorApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -17,7 +17,7 @@ public class StorySimulatorApp extends Application {
         Parent root = loader.load();
 
         // Mengonfigurasi dan menampilkan primary stage
-        primaryStage.setTitle("Interactive Story Simulator");
+        primaryStage.setTitle("Story Simulator App");
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -30,3 +30,4 @@ public class StorySimulatorApp extends Application {
         launch(args);
     }
 }
+

@@ -1,3 +1,4 @@
+
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -65,15 +66,15 @@ public class StoryController implements Initializable {
         }
 
         // Memperbarui teks inventory
-        StringBuilder inventoryText = new StringBuilder("Inventory: ");
+        StringBuilder inventoryText = new StringBuilder("Tas: ");
         if (storyManager.hasWeapon()) {
-            inventoryText.append("Mythical Weapon ");
+            inventoryText.append("Senjata Legendaris ");
         }
         if (storyManager.hasArtifact()) {
-            inventoryText.append("Ancient Artifact ");
+            inventoryText.append("Artefak Kuno ");
         }
         if (!storyManager.hasWeapon() && !storyManager.hasArtifact()) {
-            inventoryText.append("Empty");
+            inventoryText.append("Kosong");
         }
         inventoryLabel.setText(inventoryText.toString());
 

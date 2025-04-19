@@ -1,3 +1,4 @@
+
 /**
  * Kelas inti yang mengelola status cerita, transisi, dan logika.
  * Mendemonstrasikan penggunaan switch statement untuk menangani scene dan pilihan yang berbeda.
@@ -208,97 +209,99 @@ public class StoryManager {
         switch (currentScene) {
             case START:
                 return """
-                        You stand at the crossroads of a mystical kingdom. To the north lies a dark forest, \
-                        rumored to be filled with dangerous creatures but also treasures. To the east, \
-                        a magnificent castle looms over the landscape, home to the king and his court.
-                        
-                        Which path will you choose?""";
+                        Kamu sedang berada di persimpangan jalan di sebuah Kerajaan mistis. \
+                        Ke utara adalah jalan menuju hutan gelap, yang dirumorkan penuh dengan berbagai \
+                        makhluk dan sosok berbahaya, namun juga tersimpan harta karun tersembunyi. \
+                        Ke selatan, ada kastil nan megah membentang, kediaman Raja dan para Bangsawan. \
+                        Jalan mana yang akan kamu pilih? """;
 
             case FOREST:
                 if (hasRetreatedFromDragon) {
-                    return "You return to the forest, seeking to strengthen yourself before facing the dragon again. "
-                            + "The once-attacked village is now peaceful, thanks to your earlier help. "
-                            + "Your previous adventure has taught you much, but you know you need more power. "
-                            + "Deep in the forest, you sense powerful magic. What will you do now?";
+                    return "Kamu kembali ke hutan, carilah cara untuk memperkuat dirimu sebelum melawan Sang Naga lagi! "
+                            + "Desa yang diserang sekarang sudah damai berkat bantuanmu, terima kasih. "
+                            + "Kamu telah belajar banyak dari petualanganmu, tetapi kekuatanmu masih kurang. "
+                            + "Di dalam hutan, kamu merasakan keberadaan kuasa sihir. Apa yang akan kamu lakukan? ";
                 } else {
-                    String baseDesc = "The forest is thick with ancient trees and strange sounds. "
-                            + "As you venture deeper, you encounter a small village under attack "
-                            + "by a fearsome monster. The villagers look desperate for help.";
+                    String baseDesc = "Hutan ini penuh dengan pohon-pohon purba dan suara-suara aneh. "
+                            + "Semakin dalam kamu menjelajah, kamu melihat ada desa kecil sedang diserang. "
+                            + "oleh monster yang mengerikan. Para penduduk desa terlihat sangat putus asa. ";
 
                     // Penambahan teks bersyarat berdasarkan status moralitas
                     if (moralityScore < 0) {
-                        baseDesc += "\n\nYou also notice a treasure chest hidden nearby, seemingly unguarded.";
+                        baseDesc += "\n\nKamu juga melihat harta karun tersembunyi di dekatmu, tampaknya tak dijaga. ";
                     }
                     return baseDesc;
                 }
 
             case CASTLE:
-                String castleDesc = "The grand castle is bustling with activity. Guards eye you suspiciously as you enter.";
+                String castleDesc = "Kastil ini sangat sibuk. Para penjaga mencurigaimu ketika kamu memasuki area kastil. ";
 
                 // Teks bersyarat berdasarkan item di inventory
                 if (hasArtifact) {
-                    castleDesc += "\n\nYour artifact seems to glow in the presence of the castle's magic.";
+                    castleDesc += "\n\nArtefak ini terlihat bersinar oleh kehadiran aura magis dari kastil.";
                 }
                 if (hasWeapon) {
-                    castleDesc += "\n\nThe guards seem wary of your weapon.";
+                    castleDesc += "\n\nPara penjaga terlihat waspada dengan senjatamu.";
                 }
-                castleDesc += "\n\nThe king requests an audience with you.";
+                castleDesc += "\n\nTSang Raja memanggilmu untuk menghadap.";
                 return castleDesc;
 
             case FINAL_SHOWDOWN:
                 return """
-                        You've reached the ancient dragon's lair. The massive creature guards the realm's \
-                        greatest treasure and darkest secrets. Your journey has led to this moment.
-                        
-                        Do you face the dragon with what you've earned along the way, or retreat to gather more strength?""";
+                        Kau telah mencapai sarang Sang Naga Purba. Makhluk raksasa itu menjaga harta karun \
+                        terbesar dan rahasia tergelap dari seluruh negeri.Perjalananmu selama ini \
+                        membawamu ke titik penentuan ini.
+
+                        Akankah kau menghadapi sang naga dengan segala yang telah kau kumpulkan, \
+                        atau mundur sejenak untuk menghimpun kekuatan yang lebih besar?""";
 
             case GAME_OVER:
                 if (isCorruptedByMagic && !hasWeapon) {
                     return """
-                            The dragon senses your corruption and weakness. Without a proper weapon, \
-                            the ancient magic consumes you entirely. Your body dissolves into dark mist \
-                            as the dragon laughs.
+                            Sang Naga merasakan kutukan dan kelemahanmu. Tanpa senjata yang layak, \
+                            sihir kuno itu sepenuhnya melahapmu. Sang Naga tertawa selagi tubuhmu \
+                            larut menjadi kabut hitam.
                             
-                            GAME OVER""";
+                            PERMAINAN BERAKHIR""";
                 } else if (dragonRetreatCount >= 2) {
-                    return "The dragon blocks your escape. There's no running from destiny twice.\n\nGAME OVER";
+                    return "Kamu memilih untuk lari. Namun Sang Naga menghadang jalanmu.\n\nGAME OVER";
                 } else if (moralityScore < 0) {
                     return """
-                            Your selfish actions have led to your downfall. The kingdom falls into darkness, \
-                            and your name is forgotten in time.
+                            Tindakan egoismu membawa kehancuran pada dirimu sendiri. Kerajaan jatuh \
+                            ke dalam kegelapan, dan namamu lenyap ditelan waktu.   
                             
-                            GAME OVER""";
+                            PERMANINAN BERAKHIR""";
                 } else {
                     return """
-                            Despite your good intentions, your journey has come to a premature end. \
-                            Perhaps another path would have led to victory.
+                            Kebaikan hatimu tak cukup menyelamatkanmu kali ini. \
+                            Tapi mungkin, takdir bisa berbeda di jalur yang lain.
                             
-                            GAME OVER""";
+                            PERMAINAN BERAKHIR""";
                 }
             case VICTORY:
                 // Teks kemenangan yang berbeda berdasarkan moralitas
                 if (isCorruptedByMagic) {
                     return """
-                            The ancient magic courses through your veins as you strike down the dragon. \
-                            You claim its hoard, but feel the corruption spreading. The kingdom will soon \
-                            learn to fear your new power...
+                            Sihir kuno mengalir deras dalam nadimu selagi kamu menghabisi sang naga. \
+                            Kamu merebut seluruh harta karunnya, namun kutukan merayap dalam jiwamu. \
+                            dan dunia akan segera gentar menyebut namamu...
                             
-                            PYRRHIC VICTORY""";
+                            KEMENANGAN PENGHANCUR JIWA""";
                 } else if (moralityScore > 30) {
                     return """
-                            Through your courage and moral choices, you have overcome the dragon! \
-                            The kingdom celebrates you as a hero, and songs of your deeds will be sung for generations.
+                            Dengan hati yang teguh dan jiwa yang bersih, kamu berhasil menaklukkan kegelapan. \
+                            Namamu kini terukir dalam sejarah, dan kisahmu akan hidup dalam legenda.
                             
-                            VICTORY!""";
+                            KAMU MENANG!""";
                 } else {
                     return """
-                            Through cunning and resourcefulness, you have defeated the dragon and claimed its treasure. \
-                            Your name will be remembered in the annals of history.
+                            Dengan kecerdikan dan kelihaiannmu, kamu berhasil mengalahkan sang naga dan merebut \
+                            harta karunnya. Namamu akan tercatat dalam lembaran sejarah.
                             
-                            VICTORY!""";
+                            KAMU MENANG!""";
                 }
             default:
-                return "Error: Unknown scene";
+                return "Error: Takdir yang hilang";
         }
     }
 
@@ -365,18 +368,18 @@ public class StoryManager {
     public String getChoiceButtonText(ChoiceType choice) {
         // Nilai enum pemetaan sakelar sederhana untuk menampilkan string
         return switch (choice) {
-            case EXPLORE_FOREST -> "Explore the Forest";
-            case VISIT_CASTLE -> "Visit the Castle";
-            case FIGHT_MONSTER -> "Fight the Monster";
-            case HELP_VILLAGERS -> "Help the Villagers";
-            case STEAL_TREASURE -> "Steal the Treasure";
-            case BEFRIEND_KING -> "Befriend the King";
-            case CHALLENGE_KING -> "Challenge the King";
-            case FACE_DRAGON -> "Face the Dragon";
-            case RETREAT -> "Retreat";
-            case SEEK_ANCIENT_MAGIC -> "Seek Ancient Magic";
-            case TRAIN_WITH_VILLAGERS -> "Train with Grateful Villagers";
-            default -> "Unknown Choice";
+            case EXPLORE_FOREST -> "Jelajahi hutan";
+            case VISIT_CASTLE -> "Kunjungi kastil";
+            case FIGHT_MONSTER -> "Lawan monster";
+            case HELP_VILLAGERS -> "Bantu penduduk desa";
+            case STEAL_TREASURE -> "Curi harta karun";
+            case BEFRIEND_KING -> "Berteman dengan Raja";
+            case CHALLENGE_KING -> "Tantang Sang Raja ";
+            case FACE_DRAGON -> "Hadapi Sang Naga";
+            case RETREAT -> "Kabur";
+            case SEEK_ANCIENT_MAGIC -> "Cari sihir kuno";
+            case TRAIN_WITH_VILLAGERS -> "Berlatih bersama penduduk";
+            default -> "Pilihan tidak diketahui";
         };
     }
 
@@ -475,5 +478,7 @@ public class StoryManager {
         this.hasRetreatedFromDragon = false;
         this.dragonRetreatCount = 0; // Reset the counter
         this.isCorruptedByMagic = false;
+    
+
     }
 }
