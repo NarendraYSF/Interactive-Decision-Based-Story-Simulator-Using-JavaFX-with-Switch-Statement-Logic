@@ -6,7 +6,7 @@
 public class StoryManager {
     // Enum for different scenes in the story
     public enum SceneID {
-        START, FOREST, CASTLE, FINAL_SHOWDOWN, GAME_OVER, VICTORY
+        START, FOREST, CASTLE, FINAL_SHOWDOWN, GAME_OVER, VICTORY,BETRAYAL_ENDING
     }
 
     // Enum for different choices the player can make
@@ -15,7 +15,7 @@ public class StoryManager {
         HELP_VILLAGERS, STEAL_TREASURE, BEFRIEND_KING,
         CHALLENGE_KING, FACE_DRAGON, RETREAT,
         // New choices for the forest revisit after dragon retreat
-        SEEK_ANCIENT_MAGIC, TRAIN_WITH_VILLAGERS
+        SEEK_ANCIENT_MAGIC, TRAIN_WITH_VILLAGERS,BETRAY_KING
     }
 
     private SceneID currentScene;
@@ -25,6 +25,7 @@ public class StoryManager {
     private boolean hasRetreatedFromDragon;
     private int dragonRetreatCount;
     private boolean isCorruptedByMagic;
+    private boolean befriendedKing;
 
     /**
      * Konstruktor melakukan inisialisasi status permainan ke nilai awal
@@ -37,6 +38,7 @@ public class StoryManager {
         this.hasRetreatedFromDragon = false;
         this.dragonRetreatCount = 0;
         this.isCorruptedByMagic = false;
+        this.befriendedKing = false;
     }
 
     /**
@@ -141,12 +143,17 @@ public class StoryManager {
     private void handleCastleSceneChoice(ChoiceType userChoice) {
         switch (userChoice) {
             case BEFRIEND_KING:
-                moralityScore += 15;
-                // Jalur tergantung pada kondisi inventory
-                if (hasArtifact) {
-                    currentScene = SceneID.FINAL_SHOWDOWN;
+                if (!befriendedKing) {
+                    moralityScore += 15;
+                    befriendedKing = true; // Set the flag to true after befriending the king
+                    // Jalur tergantung pada kondisi inventory
+                    if (hasArtifact) {
+                        currentScene = SceneID.FINAL_SHOWDOWN;
+                    } else {
+                        currentScene = SceneID.FOREST; // Harus kembali dan menemukan artefak
+                    }
                 } else {
-                    currentScene = SceneID.FOREST; // Harus kembali dan menemukan artefak
+                    System.out.println("You have already befriended the king.");
                 }
                 break;
             case CHALLENGE_KING:
@@ -157,6 +164,16 @@ public class StoryManager {
                 } else {
                     currentScene = SceneID.GAME_OVER; // Akan mati jika menantang tanpa senjata
                 }
+                break;
+            case BETRAY_KING:
+                if (befriendedKing && hasWeapon && moralityScore <= 10) {
+                    currentScene = SceneID.BETRAYAL_ENDING;
+                } else {
+                    System.out.println("You can't betray the king without his trust, a weapon, and a dark heart.");
+                }
+                break;
+            case FACE_DRAGON:
+                currentScene = SceneID.FINAL_SHOWDOWN;
                 break;
             default:
                 throw new IllegalArgumentException("Invalid choice for CASTLE scene: " + userChoice);
@@ -234,17 +251,22 @@ public class StoryManager {
                 }
 
             case CASTLE:
-                String castleDesc = "Kastil ini sangat sibuk. Para penjaga mencurigaimu ketika kamu memasuki area kastil. ";
+                if (befriendedKing) {
+                    return "Kamu kembali ke kastil setelah menjelajahi hutan. Sang Raja menyambutmu sebagai teman. "
+                            + "Kamu merasa lebih kuat dan siap menghadapi tantangan berikutnya.";
+                } else {
+                    String castleDesc = "Kastil ini sangat sibuk. Para penjaga mencurigaimu ketika kamu memasuki area kastil. ";
 
-                // Teks bersyarat berdasarkan item di inventory
-                if (hasArtifact) {
-                    castleDesc += "\n\nArtefak ini terlihat bersinar oleh kehadiran aura magis dari kastil.";
+                    // Teks bersyarat berdasarkan item di inventory
+                    if (hasArtifact) {
+                        castleDesc += "\n\nArtefak ini terlihat bersinar oleh kehadiran aura magis dari kastil.";
+                    }
+                    if (hasWeapon) {
+                        castleDesc += "\n\nPara penjaga terlihat waspada dengan senjatamu.";
+                    }
+                    castleDesc += "\n\nSang Raja memanggilmu untuk menghadap.";
+                    return castleDesc;
                 }
-                if (hasWeapon) {
-                    castleDesc += "\n\nPara penjaga terlihat waspada dengan senjatamu.";
-                }
-                castleDesc += "\n\nTSang Raja memanggilmu untuk menghadap.";
-                return castleDesc;
 
             case FINAL_SHOWDOWN:
                 return """
@@ -300,6 +322,14 @@ public class StoryManager {
                             
                             KAMU MENANG!""";
                 }
+                    case BETRAYAL_ENDING:
+                        return """
+                    Dengan senyum licik, kamu menikam Sang Raja dari belakang. \
+                    Kepercayaan yang telah ia berikan kini berubah menjadi pengkhianatan berdarah. \
+                    Kerajaan jatuh ke tanganmu, namun tidak ada sukacita dalam kemenangan ini. \
+                    Bayangan pengkhianatan akan terus menghantui tahta yang kau rebut.
+        
+                    AKHIR PENGKHIANATAN - GAME OVER""";
             default:
                 return "Error: Takdir yang hilang";
         }
@@ -336,23 +366,38 @@ public class StoryManager {
                     } else {
                         return new ChoiceType[]{
                                 ChoiceType.FIGHT_MONSTER,
-                                ChoiceType.HELP_VILLAGERS
+                                ChoiceType.HELP_VILLAGERS,
+                                ChoiceType.STEAL_TREASURE
                         };
                     }
                 }
 
             case CASTLE:
-                return new ChoiceType[]{
-                        ChoiceType.BEFRIEND_KING,
-                        ChoiceType.CHALLENGE_KING
-                };
-
+                if (befriendedKing) {
+                    // Setelah kembali dari hutan dalam jalur pengkhianatan
+                    if (hasWeapon) {
+                        return new ChoiceType[]{
+                                ChoiceType.FACE_DRAGON,
+                                ChoiceType.BETRAY_KING
+                        };
+                    } else {
+                        return new ChoiceType[]{
+                                ChoiceType.FACE_DRAGON,
+                                ChoiceType.CHALLENGE_KING
+                        };
+                    }
+                } else {
+                    return new ChoiceType[]{
+                            ChoiceType.BEFRIEND_KING,
+                            ChoiceType.CHALLENGE_KING
+                    };
+                }
             case FINAL_SHOWDOWN:
                 return new ChoiceType[]{
                         ChoiceType.FACE_DRAGON,
                         ChoiceType.RETREAT
                 };
-
+            case BETRAYAL_ENDING:
             case GAME_OVER:
             case VICTORY:
                 return new ChoiceType[0]; // Tidak ada pilihan untuk status akhir
@@ -379,6 +424,7 @@ public class StoryManager {
             case RETREAT -> "Kabur";
             case SEEK_ANCIENT_MAGIC -> "Cari sihir kuno";
             case TRAIN_WITH_VILLAGERS -> "Berlatih bersama penduduk";
+            case BETRAY_KING -> "Mengkhianati Raja";
             default -> "Pilihan tidak diketahui";
         };
     }
@@ -478,7 +524,7 @@ public class StoryManager {
         this.hasRetreatedFromDragon = false;
         this.dragonRetreatCount = 0; // Reset the counter
         this.isCorruptedByMagic = false;
-    
+
 
     }
 }
